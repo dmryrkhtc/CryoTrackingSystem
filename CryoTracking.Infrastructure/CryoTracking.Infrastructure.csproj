@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CryoTracking.Domain\CryoTracking.Domain.csproj" />
-    <ProjectReference Include="..\CryoTracking.Application\CryoTracking.Application.csproj" />
+   
   </ItemGroup>
 
   <ItemGroup>
@@ -12,6 +12,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    
   </ItemGroup>
 
   <PropertyGroup>
