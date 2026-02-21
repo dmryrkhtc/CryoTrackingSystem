@@ -26,7 +26,7 @@ namespace CryoTracking.Domain.Entities
         public string MaritalStatus { get; set; }
 
         //KALITE STANDARTLARI ICIN OLUSTURULAN KAYITLARIN TARIHI
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
 }
