@@ -1,4 +1,6 @@
+using CryoTracking.Application.Interfaces;
 using CryoTracking.Infrastructure.Persistence;
+using CryoTracking.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,7 @@ var app = builder.Build();
 //DBCONTEXT EKLEME
 builder.Services.AddDbContext<CryoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

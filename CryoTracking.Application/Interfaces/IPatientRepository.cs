@@ -1,17 +1,17 @@
 ﻿using CryoTracking.Domain.Entities;
 namespace CryoTracking.Application.Interfaces
 {
-    public class IPatientRepository
+    public interface IPatientRepository
     {
         //TUM HASTALARI GETIRMEK ICIN ASYNC METOD
-        Task<IEnumerable<Patient>> GetAllPatientsAsync();
+        Task<IEnumerable<Patient>> GetAllAsync();
         //ID'YE GORE TEK HASTA GETIRMEK ICIN ASYNC METOD BULAMAZSA NULL DONER
-        Task<Patient?> GetPatientByIdAsync(int id);
+        Task<Patient?> GetByIdAsync(int id);
         //YENI HASTA EKLEMEK ICIN ASYNC METOD
-        Task AddPatientAsync(Patient patient);
+        Task AddAsync(Patient patient);
         //VAR OLAN HASTA BILGILERINI GUNCELLEMEK ICIN ASYNC METOD
-        Task UpdatePatientAsync(Patient patient);
+        Task UpdateAsync(Patient patient);
         //ID'YE GORE HASTA SILMEK ICIN ASYNC METOD
-        Task DeletePatientAsync(int id);
+        Task DeleteAsync(int id);
     }
 }
