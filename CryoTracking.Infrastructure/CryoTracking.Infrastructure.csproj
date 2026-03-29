@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\CryoTracking.Application\CryoTracking.Application.csproj" />
     <ProjectReference Include="..\CryoTracking.Domain\CryoTracking.Domain.csproj" />
    
   </ItemGroup>

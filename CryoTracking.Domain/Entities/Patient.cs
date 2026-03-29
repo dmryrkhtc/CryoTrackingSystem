@@ -28,5 +28,9 @@ namespace CryoTracking.Domain.Entities
         //KALITE STANDARTLARI ICIN OLUSTURULAN KAYITLARIN TARIHI
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        //navigation properties
+        public ICollection<Sample> Samples { get; set; }
+        public ICollection<Consent> Consents { get; set; }
+
     }
 }
