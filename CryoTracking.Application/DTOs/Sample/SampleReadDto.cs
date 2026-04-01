@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CryoTracking.Application.DTOs
+namespace CryoTracking.Application.DTOs.Sample
 {
-    class PatientRequestDto
+    class SampleReadDto
     {
     }
 }
