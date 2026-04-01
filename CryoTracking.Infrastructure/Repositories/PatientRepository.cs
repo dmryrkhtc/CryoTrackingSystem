@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using CryoTracking.Domain.Entities;
+using CryoTracking.Application.DTOs.Patient;
 using CryoTracking.Application.Interfaces;
+using CryoTracking.Domain.Entities;
+using CryoTracking.Domain.Response;
 using CryoTracking.Infrastructure.Persistence;
 
 namespace CryoTracking.Infrastructure.Repositories
@@ -8,42 +10,206 @@ namespace CryoTracking.Infrastructure.Repositories
     public class PatientRepository : IPatientRepository
     {
         private readonly CryoDbContext _context;
+
         public PatientRepository(CryoDbContext context)
         {
             _context = context;
         }
-        //TUM HASTALARI GETIRMEK ICIN ASYNC METOD
-        public async Task<IEnumerable<Patient>> GetAllAsync()
+
+        public async Task<ResultResponse<IEnumerable<PatientReadDto>>> GetAllAsync()
         {
-            return await _context.Patients.ToListAsync();
-        }
-        //ID'YE GORE TEK HASTA GETIRMEK ICIN ASYNC METOD BULAMAZSA NULL DONER
-        public async Task<Patient?> GetByIdAsync(int id)
-        {
-            return await _context.Patients.FindAsync(id);
-        }
-        //YENI HASTA EKLEMEK ICIN ASYNC METOD
-        public async Task AddAsync(Patient patient)
-        {
-            await _context.Patients.AddAsync(patient);
-            await _context.SaveChangesAsync();
-        }
-        //VAR OLAN HASTA BILGILERINI GUNCELLEMEK ICIN ASYNC METOD
-        public async Task UpdateAsync(Patient patient)
-        {
-            _context.Patients.Update(patient);
-            await _context.SaveChangesAsync();
-        }
-        //ID'YE GORE HASTA SILMEK ICIN ASYNC METOD
-        public async Task DeleteAsync(int id)
-        {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient != null)
+            try
             {
-                _context.Patients.Remove(patient);
-                await _context.SaveChangesAsync();
+                var patients = await _context.Patients.ToListAsync();
+                if (!patients.Any())
+                    return new ResultResponse<IEnumerable<PatientReadDto>>
+                    {
+                        Success = false,
+                        Message = "Kayitli hasta bulunamadi."
+                    };
+
+                return new ResultResponse<IEnumerable<PatientReadDto>>
+                {
+                    Success = true,
+                    Message = "Hastalar basariyla listelendi.",
+                    Data = patients.Select(p => new PatientReadDto
+                    {
+                        PatientId = p.PatientId,
+                        FullName = p.FullName,
+                        TCNo = p.TCNo,
+                        DateOfBirth = p.DateOfBirth,
+                        Gender = p.Gender,
+                        CoupleType = p.CoupleType,
+                        ContactInfo = p.ContactInfo,
+                        MaritalStatus = p.MaritalStatus,
+                        CreatedAt = p.CreatedAt
+                    })
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<IEnumerable<PatientReadDto>>
+                {
+                    Success = false,
+                    Message = $"Hastalar getirilirken hata olustu: {ex.Message}"
+                };
             }
         }
 
+        public async Task<ResultResponse<PatientReadDto>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var p = await _context.Patients.FindAsync(id);
+                if (p == null)
+                    return new ResultResponse<PatientReadDto>
+                    {
+                        Success = false,
+                        Message = "Hasta bulunamadi."
+                    };
+
+                return new ResultResponse<PatientReadDto>
+                {
+                    Success = true,
+                    Message = "Hasta basariyla bulundu.",
+                    Data = new PatientReadDto
+                    {
+                        PatientId = p.PatientId,
+                        FullName = p.FullName,
+                        TCNo = p.TCNo,
+                        DateOfBirth = p.DateOfBirth,
+                        Gender = p.Gender,
+                        CoupleType = p.CoupleType,
+                        ContactInfo = p.ContactInfo,
+                        MaritalStatus = p.MaritalStatus,
+                        CreatedAt = p.CreatedAt
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<PatientReadDto>
+                {
+                    Success = false,
+                    Message = $"Hasta getirilirken hata olustu: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResultResponse<PatientReadDto>> CreateAsync(PatientCreateDto dto)
+        {
+            try
+            {
+                var patient = new Patient
+                {
+                    FullName = dto.FullName,
+                    TCNo = dto.TCNo,
+                    DateOfBirth = dto.DateOfBirth,
+                    Gender = dto.Gender,
+                    CoupleType = dto.CoupleType,
+                    ContactInfo = dto.ContactInfo,
+                    MaritalStatus = dto.MaritalStatus,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _context.Patients.AddAsync(patient);
+                await _context.SaveChangesAsync();
+
+                return new ResultResponse<PatientReadDto>
+                {
+                    Success = true,
+                    Message = "Hasta basariyla eklendi.",
+                    Data = new PatientReadDto
+                    {
+                        PatientId = patient.PatientId,
+                        FullName = patient.FullName,
+                        TCNo = patient.TCNo,
+                        DateOfBirth = patient.DateOfBirth,
+                        Gender = patient.Gender,
+                        CoupleType = patient.CoupleType,
+                        ContactInfo = patient.ContactInfo,
+                        MaritalStatus = patient.MaritalStatus,
+                        CreatedAt = patient.CreatedAt
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<PatientReadDto>
+                {
+                    Success = false,
+                    Message = $"Hasta eklenirken hata olustu: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResultResponse<bool>> UpdateAsync(int id, PatientUpdateDto dto)
+        {
+            try
+            {
+                var patient = await _context.Patients.FindAsync(id);
+                if (patient == null)
+                    return new ResultResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Guncellenecek hasta bulunamadi."
+                    };
+
+                patient.FullName = dto.FullName;
+                patient.ContactInfo = dto.ContactInfo;
+                patient.CoupleType = dto.CoupleType;
+                patient.MaritalStatus = dto.MaritalStatus;
+
+                _context.Patients.Update(patient);
+                await _context.SaveChangesAsync();
+
+                return new ResultResponse<bool>
+                {
+                    Success = true,
+                    Message = "Hasta basariyla guncellendi.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Hasta guncellenirken hata olustu: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResultResponse<bool>> DeleteAsync(int id)
+        {
+            try
+            {
+                var patient = await _context.Patients.FindAsync(id);
+                if (patient == null)
+                    return new ResultResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Silinecek hasta bulunamadi."
+                    };
+
+                _context.Patients.Remove(patient);
+                await _context.SaveChangesAsync();
+
+                return new ResultResponse<bool>
+                {
+                    Success = true,
+                    Message = "Hasta basariyla silindi.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Hasta silinirken hata olustu: {ex.Message}"
+                };
+            }
+        }
     }
 }
