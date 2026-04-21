@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace CryoTracking.Application.DTOs.QualityAssessment
 {
-    class QualityAssessmentReadDto
+    public class QualityAssessmentReadDto
     {
+        public int QAId { get; set; }
+        public int SampleId { get; set; }
+        public string MorphologyGrade { get; set; }
+        public string? EmbryologistNote { get; set; }
+        public double? AIScore { get; set; }
+        public DateTime ScoredAt { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using CryoTracking.Application.DTOs;
+using CryoTracking.Application.DTOs.Consent;
+using CryoTracking.Domain.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace CryoTracking.Application.Interfaces
 {
     public interface IConsentRepository
     {
-        Task<IEnumerable<ConsentResponseDto>> GetByPatientIdAsync(int patientId);
-        Task<ConsentResponseDto> CreateAsync(ConsentRequestDto dto);
+        Task<ResultResponse<IEnumerable<ConsentReadDto>>> GetByPatientIdAsync(int patientId);
+        Task<ResultResponse<ConsentReadDto>> CreateAsync(ConsentCreateDto dto);
     }
 }

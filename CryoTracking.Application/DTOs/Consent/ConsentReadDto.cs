@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace CryoTracking.Application.DTOs.Consent
 {
-    class ConsentReadDto
+    public class ConsentReadDto
     {
+        public int ConsentId { get; set; }
+        public int PatientId { get; set; }
+        public string PatientName { get; set; }
+        public string ConsentType { get; set; }
+        public string FilePath { get; set; }
+        public DateTime SignedAt { get; set; }
     }
 }

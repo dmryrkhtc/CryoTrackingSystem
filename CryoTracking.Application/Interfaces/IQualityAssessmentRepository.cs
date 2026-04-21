@@ -1,4 +1,6 @@
 ﻿using CryoTracking.Application.DTOs;
+using CryoTracking.Application.DTOs.QualityAssessment;
+using CryoTracking.Domain.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,8 @@ namespace CryoTracking.Application.Interfaces
 {
     public interface IQualityAssessmentRepository
     {
-        Task<IEnumerable<QualityAssessmentResponseDto>> GetBySampleIdAsync(int sampleId);
-        Task<QualityAssessmentResponseDto> CreateAsync(QualityAssessmentRequestDto dto);
+
+        Task<ResultResponse<IEnumerable<QualityAssessmentReadDto>>> GetBySampleIdAsync(int sampleId);
+        Task<ResultResponse<QualityAssessmentReadDto>> CreateAsync(QualityAssessmentCreateDto dto);
     }
 }
