@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryoTracking.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,12 +22,12 @@ namespace CryoTracking.Application.DTOs.Patient
         public DateTime DateOfBirth { get; set; }
 
         [Required]
-        public string Gender { get; set; }
+        public Gender Gender { get; set; }
 
         public string? CoupleType { get; set; }
 
         [Required]
-        public string ContactInfo { get; set; }
+        public string? ContactInfo { get; set; }
 
         public string? MaritalStatus { get; set; }
     }

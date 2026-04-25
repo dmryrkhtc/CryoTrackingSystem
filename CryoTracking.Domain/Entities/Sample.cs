@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryoTracking.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,16 +12,17 @@ namespace CryoTracking.Domain.Entities
         public int SampleId { get; set; }
         //Kime ait
         public int PatientId { get; set; }
-        // Embriyo / sperm / yumurta mi
-        public string SampleType { get; set; } 
+        // Embriyo / sperm / yumurta mi-enum
+        public SampleType SampleType { get; set; }
         //dondurma baslar baslamaz 5 yildan duser
         public DateTime FreezeDate { get; set; }
         //cozdurma kaydi
-        public DateTime? ThawDate { get; set; } 
-        // Frozen, Thawed, Discarded, LegalHold
-        public string Status { get; set; }
-        // Embriyolog UserId
-        public int CreatedBy { get; set; } 
+        public DateTime? ThawDate { get; set; }
+        // Frozen, Thawed, Discarded, LegalHold - Varsayılan dondurulmuş
+
+        public StatusType Status { get; set; } = StatusType.Frozen; 
+         // Embriyolog UserId
+         public int CreatedBy { get; set; } 
         //klinik gozlem notları
         public string? Notes { get; set; }
         // Navigation

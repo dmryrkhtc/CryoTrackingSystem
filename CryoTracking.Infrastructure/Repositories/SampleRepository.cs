@@ -21,49 +21,33 @@ namespace CryoTracking.Infrastructure.Repositories
                 _context = context;
             }
 
-            public async Task<ResultResponse<IEnumerable<SampleReadDto>>> GetAllAsync()
+        public async Task<ResultResponse<IEnumerable<SampleReadDto>>> GetAllAsync()
+        {
+            try
             {
-                try
-                {
-                    var samples = await _context.Samples
-                        .Include(s => s.Patient)
-                        .ToListAsync();
-
-                    if (!samples.Any())
-                        return new ResultResponse<IEnumerable<SampleReadDto>>
-                        {
-                            Success = false,
-                            Message = "Kayitli ornek bulunamadi."
-                        };
-
-                    return new ResultResponse<IEnumerable<SampleReadDto>>
+                var samples = await _context.Samples
+                    .AsNoTracking()
+                    .Select(s => new SampleReadDto
                     {
-                        Success = true,
-                        Message = "Ornekler basariyla listelendi.",
-                        Data = samples.Select(s => new SampleReadDto
-                        {
-                            SampleId = s.SampleId,
-                            PatientId = s.PatientId,
-                            PatientName = s.Patient?.FullName ?? "",
-                            SampleType = s.SampleType,
-                            FreezeDate = s.FreezeDate,
-                            ThawDate = s.ThawDate,
-                            Status = s.Status,
-                            Notes = s.Notes
-                        })
-                    };
-                }
-                catch (Exception ex)
-                {
-                    return new ResultResponse<IEnumerable<SampleReadDto>>
-                    {
-                        Success = false,
-                        Message = $"Ornekler getirilirken hata olustu: {ex.Message}"
-                    };
-                }
+                        SampleId = s.SampleId,
+                        PatientName = s.Patient.FullName,
+                        SampleType = s.SampleType,
+                        FreezeDate = s.FreezeDate,
+                        ThawDate = s.ThawDate,
+                        Status = s.Status,
+                        Notes = s.Notes
+                    })
+                    .ToListAsync();
+
+                return new ResultResponse<IEnumerable<SampleReadDto>> { Success = true, Data = samples };
             }
+            catch (Exception ex)
+            {
+                return new ResultResponse<IEnumerable<SampleReadDto>> { Success = false, Message = ex.Message };
+            }
+        }
 
-            public async Task<ResultResponse<SampleReadDto>> GetByIdAsync(int id)
+        public async Task<ResultResponse<SampleReadDto>> GetByIdAsync(int id)
             {
                 try
                 {

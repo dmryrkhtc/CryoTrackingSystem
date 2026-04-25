@@ -10,14 +10,14 @@ namespace CryoTracking.Domain.Entities
     {
         public int LogId { get; set; }
         public int UserId { get; set; }
-        public string Action { get; set; }
+        public string Action { get; set; } = null!;
         public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
-        public string TableName { get; set; }
+        public string TableName { get; set; } = null!;
         public int RecordId { get; set; }
         public string? IPAddress { get; set; }
 
         //navigation properties
-        public User User { get; set; }
+        public User User { get; set; } = null!;
 
     }
 }

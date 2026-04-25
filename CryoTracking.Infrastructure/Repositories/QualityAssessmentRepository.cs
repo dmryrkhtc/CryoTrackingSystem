@@ -60,12 +60,15 @@ namespace CryoTracking.Infrastructure.Repositories
         {
             try
             {
+                // ai score sonradan eklenecegi icin simdilik morphology grade'e gore bir deger atayalim
+                double finalScore = dto.AIScore ?? (dto.MorphologyGrade.Contains("AA") ? 0.92 : 0.65);
+
                 var qa = new QualityAssessment
                 {
                     SampleId = dto.SampleId,
                     MorphologyGrade = dto.MorphologyGrade,
                     EmbryologistNote = dto.EmbryologistNote,
-                    AIScore = dto.AIScore,
+                    AIScore = finalScore,
                     ScoredAt = DateTime.UtcNow
                 };
 
@@ -75,26 +78,18 @@ namespace CryoTracking.Infrastructure.Repositories
                 return new ResultResponse<QualityAssessmentReadDto>
                 {
                     Success = true,
-                    Message = "Kalite degerlendirmesi basariyla eklendi.",
                     Data = new QualityAssessmentReadDto
                     {
+                        //degisecek veri setine gore
                         QAId = qa.QAId,
-                        SampleId = qa.SampleId,
-                        MorphologyGrade = qa.MorphologyGrade,
-                        EmbryologistNote = qa.EmbryologistNote,
                         AIScore = qa.AIScore,
-                        ScoredAt = qa.ScoredAt
+                        MorphologyGrade = qa.MorphologyGrade
+                        
                     }
                 };
             }
-            catch (Exception ex)
-            {
-                return new ResultResponse<QualityAssessmentReadDto>
-                {
-                    Success = false,
-                    Message = $"Kalite degerlendirmesi eklenirken hata olustu: {ex.Message}"
-                };
-            }
+            catch (Exception ex) { return new ResultResponse<QualityAssessmentReadDto> { Success = false, Message = ex.Message }; }
         }
     }
+    
 }

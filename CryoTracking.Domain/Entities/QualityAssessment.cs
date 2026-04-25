@@ -11,14 +11,14 @@ namespace CryoTracking.Domain.Entities
         public int QAId { get; set; }
         public int SampleId { get; set; }
         //embriyo ise blastokist, sperm ise motilite, yumurta ise kalite gibi kriterler
-        public string MorphologyGrade { get; set; }
+        public string MorphologyGrade { get; set; } = null!;//4aa,3vv
         //klinik gozlem notlari
         public string? EmbryologistNote { get; set; }
         //sistem onerisi
         public double? AIScore { get; set; }
         public DateTime ScoredAt { get; set; } = DateTime.UtcNow;
         // Navigation
-        public Sample Sample { get; set; }
+        public Sample Sample { get; set; } = null!;
 
     }
 }

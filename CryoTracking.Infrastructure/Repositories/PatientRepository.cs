@@ -4,6 +4,7 @@ using CryoTracking.Application.Interfaces;
 using CryoTracking.Domain.Entities;
 using CryoTracking.Domain.Response;
 using CryoTracking.Infrastructure.Persistence;
+using CryoTracking.Domain.Enums;
 
 namespace CryoTracking.Infrastructure.Repositories
 {
@@ -16,46 +17,37 @@ namespace CryoTracking.Infrastructure.Repositories
             _context = context;
         }
 
+
         public async Task<ResultResponse<IEnumerable<PatientReadDto>>> GetAllAsync()
         {
             try
             {
-                var patients = await _context.Patients.ToListAsync();
-                if (!patients.Any())
-                    return new ResultResponse<IEnumerable<PatientReadDto>>
-                    {
-                        Success = false,
-                        Message = "Kayitli hasta bulunamadi."
-                    };
-
-                return new ResultResponse<IEnumerable<PatientReadDto>>
-                {
-                    Success = true,
-                    Message = "Hastalar basariyla listelendi.",
-                    Data = patients.Select(p => new PatientReadDto
+                var patients = await _context.Patients
+                    .AsNoTracking() 
+                    .Select(p => new PatientReadDto
                     {
                         PatientId = p.PatientId,
                         FullName = p.FullName,
                         TCNo = p.TCNo,
                         DateOfBirth = p.DateOfBirth,
-                        Gender = p.Gender,
+                        Gender = p.Gender, // Enum'ı string'e çeviriyoruz
                         CoupleType = p.CoupleType,
                         ContactInfo = p.ContactInfo,
                         MaritalStatus = p.MaritalStatus,
                         CreatedAt = p.CreatedAt
                     })
-                };
+                    .ToListAsync();
+
+                if (!patients.Any())
+                    return new ResultResponse<IEnumerable<PatientReadDto>> { Success = false, Message = "Kayıtlı hasta bulunamadı." };
+
+                return new ResultResponse<IEnumerable<PatientReadDto>> { Success = true, Message = "Hastalar başarıyla listelendi.", Data = patients };
             }
             catch (Exception ex)
             {
-                return new ResultResponse<IEnumerable<PatientReadDto>>
-                {
-                    Success = false,
-                    Message = $"Hastalar getirilirken hata olustu: {ex.Message}"
-                };
+                return new ResultResponse<IEnumerable<PatientReadDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
-
         public async Task<ResultResponse<PatientReadDto>> GetByIdAsync(int id)
         {
             try

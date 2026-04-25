@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryoTracking.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,15 +16,15 @@ namespace CryoTracking.Domain.Entities
         public string TCNo { get; set; }  
         
         //YASA GORE BASARI ORANI
-        public DateTime DateOfBirth { get; set; } 
-        public string Gender { get; set; }
-        public string CoupleType { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public Gender Gender { get; set; }
+        public string? CoupleType { get; set; }
 
         //SURE UYARILARI ICIN
-        public string ContactInfo { get; set; }
+        public string? ContactInfo { get; set; }
 
         //BOSANMA DURUMU
-        public string MaritalStatus { get; set; }
+        public string? MaritalStatus { get; set; }
 
         //KALITE STANDARTLARI ICIN OLUSTURULAN KAYITLARIN TARIHI
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -12,12 +12,12 @@ namespace CryoTracking.Domain.Entities
         //hangi hastaya ait oldugu
         public int PatientId { get; set; }
         //ne turu onay oldugu (embriyo dondurma, sperm dondurma, yumurta dondurma, cozme, transfer gibi)
-        public string ConsentType { get; set; }
+        public string ConsentType { get; set; } = null!;
         //dosya yolu veya onay belgesinin saklandigi yer
-        public string FilePath { get; set; }
+        public string FilePath { get; set; } = null!;
         //kanit
         public DateTime SignedAt { get; set; }
         // Navigation
-        public Patient Patient { get; set; }
+        public Patient Patient { get; set; } = null!;
     }
 }

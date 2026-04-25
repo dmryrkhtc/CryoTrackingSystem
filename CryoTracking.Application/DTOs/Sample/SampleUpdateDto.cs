@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryoTracking.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace CryoTracking.Application.DTOs.Sample
    public class SampleUpdateDto
     {
         [Required]
-        public string Status { get; set; }
+        public StatusType Status { get; set; }
 
         public DateTime? ThawDate { get; set; }
         public string? Notes { get; set; }

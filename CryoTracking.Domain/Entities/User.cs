@@ -15,7 +15,7 @@ namespace CryoTracking.Domain.Entities
         public string Password { get; set; }
         public bool IsActive { get; set; } = true;
         // Navigation
-        public Role Role { get; set; }
-        public ICollection<Log> Logs { get; set; }
+        public Role Role { get; set; } = null!;
+        public ICollection<Log> Logs { get; set; }=new List<Log>();
     }
 }

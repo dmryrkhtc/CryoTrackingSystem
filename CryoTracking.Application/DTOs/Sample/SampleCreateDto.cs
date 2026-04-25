@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryoTracking.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace CryoTracking.Application.DTOs.Sample
 
         [Required]
         // embriyo / sperm / yumurta
-        public string SampleType { get; set; } 
+        public SampleType SampleType { get; set; } 
 
         [Required]
         public DateTime FreezeDate { get; set; }
@@ -22,7 +23,7 @@ namespace CryoTracking.Application.DTOs.Sample
         [Required]
        // Frozen, Thawed, Discarded, LegalHold
 
-        public string Status { get; set; } 
+        public StatusType Status { get; set; } 
         [Required] 
         // Embriyolog UserId
         public int CreatedBy { get; set; }

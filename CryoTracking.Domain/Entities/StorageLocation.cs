@@ -16,11 +16,11 @@ namespace CryoTracking.Domain.Entities
         //cubuk adresi
         public string StrawNo { get; set; }
         //raf adresi
-        public string Shelf { get; set; }
+        public string? Shelf { get; set; }
         //her materyal tek konumda
         public int SampleId { get; set; }
         // Navigation
-        public Sample Sample { get; set; }
+        public Sample Sample { get; set; } = null!;
 
     }
 }
