@@ -27,6 +27,7 @@ namespace CryoTracking.Domain.Entities
         public string? Notes { get; set; }
         // Navigation
         public Patient Patient { get; set; }
+        public bool IsActive { get; set; } = true;
         public StorageLocation StorageLocation { get; set; }
         public ICollection<SampleStatus> StatusHistory { get; set; }
         public ICollection<QualityAssessment> QualityAssessments { get; set; }

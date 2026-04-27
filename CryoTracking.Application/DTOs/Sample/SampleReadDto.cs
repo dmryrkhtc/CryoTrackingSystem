@@ -17,5 +17,7 @@ namespace CryoTracking.Application.DTOs.Sample
         public DateTime? ThawDate { get; set; }
         public StatusType Status { get; set; }
         public string? Notes { get; set; }
+        public bool IsWarning { get; set; }
+        public bool IsExpired { get; set; }
     }
 }

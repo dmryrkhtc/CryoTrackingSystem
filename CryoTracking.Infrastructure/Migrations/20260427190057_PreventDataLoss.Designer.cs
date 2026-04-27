@@ -4,6 +4,7 @@ using CryoTracking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryoTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(CryoDbContext))]
-    partial class CryoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427190057_PreventDataLoss")]
+    partial class PreventDataLoss
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,9 +115,6 @@ namespace CryoTracking.Infrastructure.Migrations
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("MaritalStatus")
                         .HasColumnType("nvarchar(max)");
@@ -216,9 +216,6 @@ namespace CryoTracking.Infrastructure.Migrations
 
                     b.Property<DateTime>("FreezeDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");

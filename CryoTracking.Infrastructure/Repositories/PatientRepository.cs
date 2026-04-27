@@ -23,7 +23,8 @@ namespace CryoTracking.Infrastructure.Repositories
             try
             {
                 var patients = await _context.Patients
-                    .AsNoTracking() 
+                    .AsNoTracking()
+                    .Where(p => p.IsActive==true) // Sadece aktif olanları getir
                     .Select(p => new PatientReadDto
                     {
                         PatientId = p.PatientId,
@@ -183,8 +184,13 @@ namespace CryoTracking.Infrastructure.Repositories
                         Success = false,
                         Message = "Silinecek hasta bulunamadi."
                     };
+                // Fiziksel silme yerine ARŞİVLEME yapıyoruz
+                patient.IsActive = false;
+                // Opsiyonel: Hastayı pasife alınca numunelerini de pasife çekebiliriz
+                var samples = await _context.Samples.Where(s => s.PatientId == id).ToListAsync();
+                foreach (var sample in samples) { sample.IsActive = false; }
 
-                _context.Patients.Remove(patient);
+                _context.Patients.Update(patient);
                 await _context.SaveChangesAsync();
 
                 return new ResultResponse<bool>

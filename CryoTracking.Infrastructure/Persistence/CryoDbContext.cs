@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;    
-using CryoTracking.Domain.Entities; 
+using Microsoft.EntityFrameworkCore;
+using CryoTracking.Domain.Entities;
 
 namespace CryoTracking.Infrastructure.Persistence
 {
-   public class CryoDbContext : DbContext
+    public class CryoDbContext : DbContext
     {
         public CryoDbContext(DbContextOptions<CryoDbContext> options) : base(options)
         {
@@ -31,6 +31,18 @@ namespace CryoTracking.Infrastructure.Persistence
     new Role { RoleId = 4, RoleName = "Kayit Veri Yetkilisi" }, // Hasta kaydı, Evrak yönetimi, Süre takibi
     new Role { RoleId = 5, RoleName = "Hasta" }             // Sadece kendi verisini görme, Dijital imza
 );
+            modelBuilder.Entity<Sample>()
+    .HasOne(s => s.Patient)
+    .WithMany(p => p.Samples)
+    .HasForeignKey(s => s.PatientId)
+    .OnDelete(DeleteBehavior.Restrict); // Hasta silinse bile örnekler silinmesin, hata versin.
+            //kalite testleri silinmesin
+            modelBuilder.Entity<QualityAssessment>()
+        .HasOne(q => q.Sample)
+        .WithMany(s => s.QualityAssessments)
+        .HasForeignKey(q => q.SampleId)
+        .OnDelete(DeleteBehavior.Restrict);
+
             //Primary Keys
             modelBuilder.Entity<QualityAssessment>()
     .HasKey(q => q.QAId);
@@ -81,3 +93,5 @@ namespace CryoTracking.Infrastructure.Persistence
 
     }
 }
+
+

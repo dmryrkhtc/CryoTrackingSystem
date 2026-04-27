@@ -1,6 +1,7 @@
 ﻿using CryoTracking.Application.DTOs.Sample;
 using CryoTracking.Application.Interfaces;
 using CryoTracking.Domain.Entities;
+using CryoTracking.Domain.Enums;
 using CryoTracking.Domain.Response;
 using CryoTracking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ namespace CryoTracking.Infrastructure.Repositories
         {
             try
             {
+                var now = DateTime.UtcNow;
                 var samples = await _context.Samples
                     .AsNoTracking()
                     .Select(s => new SampleReadDto
@@ -36,7 +38,11 @@ namespace CryoTracking.Infrastructure.Repositories
                         FreezeDate = s.FreezeDate,
                         ThawDate = s.ThawDate,
                         Status = s.Status,
-                        Notes = s.Notes
+                        Notes = s.Notes,
+                        // 5 yıllık süre kontrolü
+                        // Eğer dondurma tarihinden bugüne 5 yıl (1825 gün) geçmişse uyarı ver
+                        IsWarning = s.Status == StatusType.Frozen && (now - s.FreezeDate).TotalDays > 1700,
+                        IsExpired = s.Status == StatusType.Frozen && (now - s.FreezeDate).TotalDays > 1825
                     })
                     .ToListAsync();
 

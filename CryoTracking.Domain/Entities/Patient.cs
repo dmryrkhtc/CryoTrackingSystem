@@ -32,6 +32,7 @@ namespace CryoTracking.Domain.Entities
         //navigation properties
         public ICollection<Sample> Samples { get; set; }
         public ICollection<Consent> Consents { get; set; }
+        public bool IsActive { get; set; } = true; // Varsayılan olarak aktif
 
     }
 }
