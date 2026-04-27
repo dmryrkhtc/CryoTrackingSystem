@@ -78,13 +78,17 @@ namespace CryoTracking.Infrastructure.Repositories
                 return new ResultResponse<QualityAssessmentReadDto>
                 {
                     Success = true,
+                    Message = "Kalite degerlendirmesi basariyla eklendi.",
                     Data = new QualityAssessmentReadDto
                     {
                         //degisecek veri setine gore
                         QAId = qa.QAId,
+                        SampleId = qa.SampleId,
+                        EmbryologistNote = qa.EmbryologistNote,
                         AIScore = qa.AIScore,
-                        MorphologyGrade = qa.MorphologyGrade
-                        
+                        MorphologyGrade = qa.MorphologyGrade,
+                        ScoredAt = qa.ScoredAt
+
                     }
                 };
             }

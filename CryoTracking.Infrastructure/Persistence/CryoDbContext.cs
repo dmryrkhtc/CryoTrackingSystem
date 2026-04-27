@@ -24,6 +24,13 @@ namespace CryoTracking.Infrastructure.Persistence
         public DbSet<Log> Logs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Role>().HasData(
+    new Role { RoleId = 1, RoleName = "Sistem Yoneticisi" }, // Tam yetki, DB yedekleme, Hata izleme
+    new Role { RoleId = 2, RoleName = "Doktor" },           // Onay mekanizması (İmha/Uzatma)
+    new Role { RoleId = 3, RoleName = "Embriyolog" },       // Lab işlemleri, Kalite girişi, Tank yönetimi
+    new Role { RoleId = 4, RoleName = "Kayit Veri Yetkilisi" }, // Hasta kaydı, Evrak yönetimi, Süre takibi
+    new Role { RoleId = 5, RoleName = "Hasta" }             // Sadece kendi verisini görme, Dijital imza
+);
             //Primary Keys
             modelBuilder.Entity<QualityAssessment>()
     .HasKey(q => q.QAId);

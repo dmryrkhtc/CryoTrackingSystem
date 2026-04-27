@@ -30,6 +30,7 @@ namespace CryoTracking.Infrastructure.Repositories
                     .Select(s => new SampleReadDto
                     {
                         SampleId = s.SampleId,
+                        PatientId=s.PatientId,
                         PatientName = s.Patient.FullName,
                         SampleType = s.SampleType,
                         FreezeDate = s.FreezeDate,
