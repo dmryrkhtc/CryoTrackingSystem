@@ -2,6 +2,9 @@ using CryoTracking.Application.Interfaces;
 using CryoTracking.Infrastructure.Persistence;
 using CryoTracking.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using CryoTracking.Application.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<PatientCreateValidator>();
 
 // Veritabaný Baðlantýsý
 builder.Services.AddDbContext<CryoDbContext>(options =>

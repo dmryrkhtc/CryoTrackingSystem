@@ -185,73 +185,52 @@ namespace CryoTracking.Infrastructure.Repositories
                 }
             }
 
-            public async Task<ResultResponse<bool>> UpdateAsync(int id, SampleUpdateDto dto)
+        public async Task<ResultResponse<bool>> UpdateAsync(int id, SampleUpdateDto dto)
+        {
+            try
             {
-                try
-                {
-                    var sample = await _context.Samples.FindAsync(id);
-                    if (sample == null)
-                        return new ResultResponse<bool>
-                        {
-                            Success = false,
-                            Message = "Guncellenecek ornek bulunamadi."
-                        };
+                var sample = await _context.Samples.FindAsync(id);
+                if (sample == null)
+                    return new ResultResponse<bool> { Success = false, Message = "Guncellenecek ornek bulunamadi." };
 
-                    sample.Status = dto.Status;
-                    sample.ThawDate = dto.ThawDate;
-                    sample.Notes = dto.Notes;
+                // Yasal takip veya Çözülmüş numuneler değiştirilemez
+                if (sample.Status == StatusType.LegalHold)
+                    return new ResultResponse<bool> { Success = false, Message = "DİKKAT: Yasal kilit (LegalHold) altındaki numuneler üzerinde işlem yapılamaz!" };
 
-                    _context.Samples.Update(sample);
-                    await _context.SaveChangesAsync();
+                if (sample.Status == StatusType.Thawed)
+                    return new ResultResponse<bool> { Success = false, Message = "Çözülmüş bir numune üzerinde bu işlem yapılamaz!" };
 
-                    return new ResultResponse<bool>
-                    {
-                        Success = true,
-                        Message = "Ornek basariyla guncellendi.",
-                        Data = true
-                    };
-                }
-                catch (Exception ex)
-                {
-                    return new ResultResponse<bool>
-                    {
-                        Success = false,
-                        Message = $"Ornek guncellenirken hata olustu: {ex.Message}"
-                    };
-                }
+                sample.Status = dto.Status;
+                sample.ThawDate = dto.ThawDate;
+                sample.Notes = dto.Notes;
+
+                _context.Samples.Update(sample);
+                await _context.SaveChangesAsync();
+
+                return new ResultResponse<bool> { Success = true, Message = "Ornek basariyla guncellendi.", Data = true };
             }
-
-            public async Task<ResultResponse<bool>> DeleteAsync(int id)
-            {
-                try
-                {
-                    var sample = await _context.Samples.FindAsync(id);
-                    if (sample == null)
-                        return new ResultResponse<bool>
-                        {
-                            Success = false,
-                            Message = "Silinecek ornek bulunamadi."
-                        };
-
-                    _context.Samples.Remove(sample);
-                    await _context.SaveChangesAsync();
-
-                    return new ResultResponse<bool>
-                    {
-                        Success = true,
-                        Message = "Ornek basariyla silindi.",
-                        Data = true
-                    };
-                }
-                catch (Exception ex)
-                {
-                    return new ResultResponse<bool>
-                    {
-                        Success = false,
-                        Message = $"Ornek silinirken hata olustu: {ex.Message}"
-                    };
-                }
-            }
+            catch (Exception ex) { return new ResultResponse<bool> { Success = false, Message = $"Ornek guncellenirken hata olustu: {ex.Message}" }; }
         }
+
+        public async Task<ResultResponse<bool>> DeleteAsync(int id)
+        {
+            try
+            {
+                var sample = await _context.Samples.FindAsync(id);
+                if (sample == null)
+                    return new ResultResponse<bool> { Success = false, Message = "Silinecek ornek bulunamadi." };
+
+                // Yasal takipteki numune silinemez!
+                if (sample.Status == StatusType.LegalHold)
+                    return new ResultResponse<bool> { Success = false, Message = "Yasal kilit altındaki numune silinemez!" };
+
+                _context.Samples.Remove(sample);
+                await _context.SaveChangesAsync();
+
+                return new ResultResponse<bool> { Success = true, Message = "Ornek basariyla silindi.", Data = true };
+            }
+            catch (Exception ex) { return new ResultResponse<bool> { Success = false, Message = $"Ornek silinirken hata olustu: {ex.Message}" }; }
+        }
+    }
     }
 

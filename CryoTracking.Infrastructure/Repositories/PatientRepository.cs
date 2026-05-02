@@ -138,6 +138,7 @@ namespace CryoTracking.Infrastructure.Repositories
 
         public async Task<ResultResponse<bool>> UpdateAsync(int id, PatientUpdateDto dto)
         {
+           
             try
             {
                 var patient = await _context.Patients.FindAsync(id);
@@ -147,6 +148,19 @@ namespace CryoTracking.Infrastructure.Repositories
                         Success = false,
                         Message = "Guncellenecek hasta bulunamadi."
                     };
+                if (patient.MaritalStatus == "Married" && dto.MaritalStatus == "Divorced")
+                {
+                    // Boşanma algılandı! Bu hastaya ait tüm embriyoları yasal takibe al.
+                    var samples = await _context.Samples
+                        .Where(s => s.PatientId == patient.PatientId && s.SampleType == SampleType.Embryo)
+                        .ToListAsync();
+
+                    foreach (var sample in samples)
+                    {
+                        sample.Status = StatusType.LegalHold; // Otomatik kilit
+                        sample.Notes += " [SİSTEM NOTU: Boşanma nedeniyle yasal takibe alındı.]";
+                    }
+                }
 
                 patient.FullName = dto.FullName;
                 patient.ContactInfo = dto.ContactInfo;
