@@ -89,7 +89,21 @@ namespace CryoTracking.Infrastructure.Persistence
                 .HasForeignKey(l => l.UserId);
             modelBuilder.Entity<SampleStatus>()
          .HasKey(x => x.StatusId);
+            //tc ve iletişim bilgisi unique olsun
+            modelBuilder.Entity<Patient>()
+    .HasIndex(p => p.TCNo)
+    .IsUnique();
+
+            modelBuilder.Entity<Patient>()
+                .HasIndex(p => p.ContactInfo)
+                .IsUnique();
+            // Eş TC numarası benzersiz olmalı
+            modelBuilder.Entity<Patient>()
+                .HasIndex(p => p.PartnerTCNo)
+                .IsUnique()
+                .HasFilter("[PartnerTCNo] IS NOT NULL");
         }
+
 
     }
 }

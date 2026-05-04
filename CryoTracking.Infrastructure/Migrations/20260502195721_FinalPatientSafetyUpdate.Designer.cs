@@ -4,6 +4,7 @@ using CryoTracking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryoTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(CryoDbContext))]
-    partial class CryoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260502195721_FinalPatientSafetyUpdate")]
+    partial class FinalPatientSafetyUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,8 +100,8 @@ namespace CryoTracking.Infrastructure.Migrations
                     b.Property<string>("ContactInfo")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("CoupleType")
-                        .HasColumnType("int");
+                    b.Property<string>("CoupleType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -116,14 +119,8 @@ namespace CryoTracking.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaritalStatus")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PartnerFullName")
+                    b.Property<string>("MaritalStatus")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PartnerTCNo")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TCNo")
                         .IsRequired()
@@ -134,10 +131,6 @@ namespace CryoTracking.Infrastructure.Migrations
                     b.HasIndex("ContactInfo")
                         .IsUnique()
                         .HasFilter("[ContactInfo] IS NOT NULL");
-
-                    b.HasIndex("PartnerTCNo")
-                        .IsUnique()
-                        .HasFilter("[PartnerTCNo] IS NOT NULL");
 
                     b.HasIndex("TCNo")
                         .IsUnique();

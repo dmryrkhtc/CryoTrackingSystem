@@ -21,3 +21,7 @@ public enum Gender
     Male = 2
   
 }
+//avukatı ilgilendiriyor
+public enum MaritalStatusType { Single = 1, Married = 2, Divorced = 3, Widowed = 4 } //dul vb
+//doktoru ilgilendiriyor
+public enum CoupleType { Single = 1, Married = 2, Consanguineous = 3 } // Akraba evliliği vb.

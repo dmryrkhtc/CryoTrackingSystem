@@ -17,21 +17,20 @@ namespace CryoTracking.Infrastructure.Repositories
             _context = context;
         }
 
-
         public async Task<ResultResponse<IEnumerable<PatientReadDto>>> GetAllAsync()
         {
             try
             {
                 var patients = await _context.Patients
                     .AsNoTracking()
-                    .Where(p => p.IsActive==true) // Sadece aktif olanları getir
+                    .Where(p => p.IsActive)
                     .Select(p => new PatientReadDto
                     {
                         PatientId = p.PatientId,
                         FullName = p.FullName,
                         TCNo = p.TCNo,
                         DateOfBirth = p.DateOfBirth,
-                        Gender = p.Gender, // Enum'ı string'e çeviriyoruz
+                        Gender = p.Gender,
                         CoupleType = p.CoupleType,
                         ContactInfo = p.ContactInfo,
                         MaritalStatus = p.MaritalStatus,
@@ -39,32 +38,27 @@ namespace CryoTracking.Infrastructure.Repositories
                     })
                     .ToListAsync();
 
-                if (!patients.Any())
-                    return new ResultResponse<IEnumerable<PatientReadDto>> { Success = false, Message = "Kayıtlı hasta bulunamadı." };
-
-                return new ResultResponse<IEnumerable<PatientReadDto>> { Success = true, Message = "Hastalar başarıyla listelendi.", Data = patients };
+                return new ResultResponse<IEnumerable<PatientReadDto>> { Success = true, Message = "Hastalar listelendi.", Data = patients };
             }
             catch (Exception ex)
             {
-                return new ResultResponse<IEnumerable<PatientReadDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ResultResponse<IEnumerable<PatientReadDto>> { Success = false, Message = ex.Message };
             }
         }
+
         public async Task<ResultResponse<PatientReadDto>> GetByIdAsync(int id)
         {
             try
             {
-                var p = await _context.Patients.FindAsync(id);
+                var p = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.PatientId == id && p.IsActive);
+
                 if (p == null)
-                    return new ResultResponse<PatientReadDto>
-                    {
-                        Success = false,
-                        Message = "Hasta bulunamadi."
-                    };
+                    return new ResultResponse<PatientReadDto> { Success = false, Message = "Hasta bulunamadı." };
 
                 return new ResultResponse<PatientReadDto>
                 {
                     Success = true,
-                    Message = "Hasta basariyla bulundu.",
                     Data = new PatientReadDto
                     {
                         PatientId = p.PatientId,
@@ -81,11 +75,7 @@ namespace CryoTracking.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                return new ResultResponse<PatientReadDto>
-                {
-                    Success = false,
-                    Message = $"Hasta getirilirken hata olustu: {ex.Message}"
-                };
+                return new ResultResponse<PatientReadDto> { Success = false, Message = ex.Message };
             }
         }
 
@@ -102,63 +92,40 @@ namespace CryoTracking.Infrastructure.Repositories
                     CoupleType = dto.CoupleType,
                     ContactInfo = dto.ContactInfo,
                     MaritalStatus = dto.MaritalStatus,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
                 };
 
                 await _context.Patients.AddAsync(patient);
                 await _context.SaveChangesAsync();
 
-                return new ResultResponse<PatientReadDto>
-                {
-                    Success = true,
-                    Message = "Hasta basariyla eklendi.",
-                    Data = new PatientReadDto
-                    {
-                        PatientId = patient.PatientId,
-                        FullName = patient.FullName,
-                        TCNo = patient.TCNo,
-                        DateOfBirth = patient.DateOfBirth,
-                        Gender = patient.Gender,
-                        CoupleType = patient.CoupleType,
-                        ContactInfo = patient.ContactInfo,
-                        MaritalStatus = patient.MaritalStatus,
-                        CreatedAt = patient.CreatedAt
-                    }
-                };
+                return await GetByIdAsync(patient.PatientId);
             }
             catch (Exception ex)
             {
-                return new ResultResponse<PatientReadDto>
-                {
-                    Success = false,
-                    Message = $"Hasta eklenirken hata olustu: {ex.Message}"
-                };
+                return new ResultResponse<PatientReadDto> { Success = false, Message = ex.Message };
             }
         }
 
         public async Task<ResultResponse<bool>> UpdateAsync(int id, PatientUpdateDto dto)
         {
-           
             try
             {
                 var patient = await _context.Patients.FindAsync(id);
-                if (patient == null)
-                    return new ResultResponse<bool>
-                    {
-                        Success = false,
-                        Message = "Guncellenecek hasta bulunamadi."
-                    };
-                if (patient.MaritalStatus == "Married" && dto.MaritalStatus == "Divorced")
+                if (patient == null || !patient.IsActive)
+                    return new ResultResponse<bool> { Success = false, Message = "Hasta bulunamadı." };
+
+                // İş Mantığı: Boşanma durumunda otomatik kilit (Enum bazlı kontrol)
+                if (patient.MaritalStatus == MaritalStatusType.Married && dto.MaritalStatus == MaritalStatusType.Divorced)
                 {
-                    // Boşanma algılandı! Bu hastaya ait tüm embriyoları yasal takibe al.
                     var samples = await _context.Samples
-                        .Where(s => s.PatientId == patient.PatientId && s.SampleType == SampleType.Embryo)
+                        .Where(s => s.PatientId == id && s.SampleType == SampleType.Embryo)
                         .ToListAsync();
 
-                    foreach (var sample in samples)
+                    foreach (var s in samples)
                     {
-                        sample.Status = StatusType.LegalHold; // Otomatik kilit
-                        sample.Notes += " [SİSTEM NOTU: Boşanma nedeniyle yasal takibe alındı.]";
+                        s.Status = StatusType.LegalHold;
+                        s.Notes += " [SİSTEM: Boşanma nedeniyle kilitlendi.]";
                     }
                 }
 
@@ -170,20 +137,11 @@ namespace CryoTracking.Infrastructure.Repositories
                 _context.Patients.Update(patient);
                 await _context.SaveChangesAsync();
 
-                return new ResultResponse<bool>
-                {
-                    Success = true,
-                    Message = "Hasta basariyla guncellendi.",
-                    Data = true
-                };
+                return new ResultResponse<bool> { Success = true, Data = true };
             }
             catch (Exception ex)
             {
-                return new ResultResponse<bool>
-                {
-                    Success = false,
-                    Message = $"Hasta guncellenirken hata olustu: {ex.Message}"
-                };
+                return new ResultResponse<bool> { Success = false, Message = ex.Message };
             }
         }
 
@@ -192,35 +150,19 @@ namespace CryoTracking.Infrastructure.Repositories
             try
             {
                 var patient = await _context.Patients.FindAsync(id);
-                if (patient == null)
-                    return new ResultResponse<bool>
-                    {
-                        Success = false,
-                        Message = "Silinecek hasta bulunamadi."
-                    };
-                // Fiziksel silme yerine ARŞİVLEME yapıyoruz
+                if (patient == null) return new ResultResponse<bool> { Success = false, Message = "Hasta bulunamadı." };
+
                 patient.IsActive = false;
-                // Opsiyonel: Hastayı pasife alınca numunelerini de pasife çekebiliriz
+
                 var samples = await _context.Samples.Where(s => s.PatientId == id).ToListAsync();
-                foreach (var sample in samples) { sample.IsActive = false; }
+                foreach (var s in samples) s.IsActive = false;
 
-                _context.Patients.Update(patient);
                 await _context.SaveChangesAsync();
-
-                return new ResultResponse<bool>
-                {
-                    Success = true,
-                    Message = "Hasta basariyla silindi.",
-                    Data = true
-                };
+                return new ResultResponse<bool> { Success = true, Data = true };
             }
             catch (Exception ex)
             {
-                return new ResultResponse<bool>
-                {
-                    Success = false,
-                    Message = $"Hasta silinirken hata olustu: {ex.Message}"
-                };
+                return new ResultResponse<bool> { Success = false, Message = ex.Message };
             }
         }
     }

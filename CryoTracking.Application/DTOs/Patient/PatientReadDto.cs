@@ -14,9 +14,11 @@ namespace CryoTracking.Application.DTOs.Patient
         public string TCNo { get; set; }
         public DateTime DateOfBirth { get; set; }
         public Gender Gender { get; set; }
-        public string? CoupleType { get; set; }
+        public CoupleType CoupleType { get; set; }
         public string ContactInfo { get; set; }
-        public string? MaritalStatus { get; set; }
+        public string? PartnerFullName { get; set; }
+        public string? PartnerTCNo { get; set; }
+        public MaritalStatusType MaritalStatus { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using CryoTracking.Application.Validators;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,12 @@ builder.Services.AddScoped<ISampleRepository, SampleRepository>();
 builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 builder.Services.AddScoped<IQualityAssessmentRepository, QualityAssessmentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Enum deðerlerini sayý (1,2) yerine metin (Married, Single) olarak JSON'a çevirir
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // Uygulama Build Ediliyor
 var app = builder.Build();

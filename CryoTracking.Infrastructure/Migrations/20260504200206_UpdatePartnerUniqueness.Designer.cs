@@ -4,6 +4,7 @@ using CryoTracking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryoTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(CryoDbContext))]
-    partial class CryoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504200206_UpdatePartnerUniqueness")]
+    partial class UpdatePartnerUniqueness
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

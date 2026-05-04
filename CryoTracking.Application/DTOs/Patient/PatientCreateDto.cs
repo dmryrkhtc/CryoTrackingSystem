@@ -12,7 +12,7 @@ namespace CryoTracking.Application.DTOs.Patient
     {
         [Required]
         [StringLength(100)]
-        public string FullName { get; set; }
+        public string FullName { get; set; }=default!;
 
         [Required]
         [StringLength(11, MinimumLength = 11)]
@@ -24,11 +24,12 @@ namespace CryoTracking.Application.DTOs.Patient
         [Required]
         public Gender Gender { get; set; }
 
-        public string? CoupleType { get; set; }
+        public CoupleType CoupleType { get; set; }
 
         [Required]
         public string? ContactInfo { get; set; }
-
-        public string? MaritalStatus { get; set; }
+        public string? PartnerFullName { get; set; }
+        public string? PartnerTCNo { get; set; }
+        public MaritalStatusType MaritalStatus { get; set; }
     }
 }

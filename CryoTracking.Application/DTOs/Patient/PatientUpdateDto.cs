@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CryoTracking.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -15,9 +16,10 @@ namespace CryoTracking.Application.DTOs.Patient
 
         [Required]
         public string ContactInfo { get; set; }
-
-        public string? CoupleType { get; set; }
-        public string? MaritalStatus { get; set; }
+        public string? PartnerFullName { get; set; }
+        public string? PartnerTCNo { get; set; }
+        public CoupleType CoupleType { get; set; }
+        public MaritalStatusType MaritalStatus { get; set; }
         // TCNo ve DateOfBirth kasitli olarak yok — degistirilemez
     }
 }
