@@ -29,10 +29,16 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Enum deðerlerini sayý (1,2) yerine metin (Married, Single) olarak JSON'a çevirir
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        // Enum'larý sayý yerine (0,1,2) isimleriyle ("Frozen", "Embryo") iþler
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Swagger arayüzünde Enum deðerlerinin isim olarak görünmesini saðlar
+    c.SchemaFilter<EnumSchemaFilter>();
+});
 // Uygulama Build Ediliyor
 var app = builder.Build();
 
