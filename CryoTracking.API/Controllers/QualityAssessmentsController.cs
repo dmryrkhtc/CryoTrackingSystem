@@ -1,9 +1,11 @@
 ﻿using CryoTracking.Application.DTOs.QualityAssessment;
 using CryoTracking.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CryoTracking.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class QualityAssessmentsController : ControllerBase
@@ -14,7 +16,7 @@ namespace CryoTracking.API.Controllers
         {
             _repo = repo;
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Embriyolog,Doktor")]
         [HttpGet("sample/{sampleId}")]
         public async Task<IActionResult> GetBySample(int sampleId)
         {
@@ -23,7 +25,7 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Embriyolog")]
         [HttpPost]
         public async Task<IActionResult> Create(QualityAssessmentCreateDto dto)
         {

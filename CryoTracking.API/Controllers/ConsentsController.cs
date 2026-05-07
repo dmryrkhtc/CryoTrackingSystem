@@ -1,9 +1,11 @@
 ﻿using CryoTracking.Application.DTOs.Consent;
 using CryoTracking.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CryoTracking.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ConsentsController : ControllerBase
@@ -14,7 +16,7 @@ namespace CryoTracking.API.Controllers
         {
             _repo = repo;
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Kayit Veri Yetkilisi")]
         [HttpGet("patient/{patientId}")]
         public async Task<IActionResult> GetByPatient(int patientId)
         {
@@ -23,7 +25,7 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Kayit Veri Yetkilisi")]
         [HttpPost]
         public async Task<IActionResult> Create(ConsentCreateDto dto)
         {

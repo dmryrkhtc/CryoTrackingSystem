@@ -4,6 +4,7 @@ using CryoTracking.Application.Interfaces;
 using CryoTracking.Domain.Entities;
 using CryoTracking.Domain.Response;
 using CryoTracking.Infrastructure.Persistence;
+using BCrypt.Net;
 
 namespace CryoTracking.Infrastructure.Repositories
 {
@@ -93,7 +94,6 @@ namespace CryoTracking.Infrastructure.Repositories
                 };
             }
         }
-
         public async Task<ResultResponse<UserReadDto>> CreateAsync(UserCreateDto dto)
         {
             try
@@ -108,14 +108,19 @@ namespace CryoTracking.Infrastructure.Repositories
                         Message = "Bu email adresi zaten kayitli."
                     };
 
+                // Şifreyi Hashle 
+               
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
                 var user = new User
                 {
                     RoleId = dto.RoleId,
                     Name = dto.Name,
                     Email = dto.Email,
-                    Password = dto.Password,
+                    Password = hashedPassword, // Artık veritabanına "12345" değil, karmaşık metin gidecek
                     IsActive = true
                 };
+                
 
                 await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();

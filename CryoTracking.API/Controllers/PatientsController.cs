@@ -1,9 +1,11 @@
 ﻿using CryoTracking.Application.DTOs.Patient;
 using CryoTracking.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CryoTracking.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PatientsController : ControllerBase
@@ -14,7 +16,7 @@ namespace CryoTracking.API.Controllers
         {
             _repo = repo;
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Kayit Veri Yetkilisi")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,7 +25,7 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Kayit Veri Yetkilisi")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -32,7 +34,7 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Kayit Veri Yetkilisi")]
         [HttpPost]
         public async Task<IActionResult> Create(PatientCreateDto dto)
         {
@@ -41,7 +43,7 @@ namespace CryoTracking.API.Controllers
                 return BadRequest(new { result.Message });
             return CreatedAtAction(nameof(GetById), new { id = result.Data.PatientId }, result.Data);
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi,Kayit Veri Yetkilisi")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, PatientUpdateDto dto)
         {
@@ -50,7 +52,7 @@ namespace CryoTracking.API.Controllers
                 return BadRequest(new { result.Message });
             return NoContent();
         }
-
+        [Authorize(Roles = "Sistem Yoneticisi")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
