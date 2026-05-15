@@ -34,5 +34,13 @@ namespace CryoTracking.API.Controllers
                 return BadRequest(new { result.Message });
             return Ok(result.Data);
         }
+        [Authorize(Roles = "Sistem Yoneticisi,Embriyolog,Doktor")]
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _repo.GetAllAsync();
+            if (!result.Success) return NotFound(new { result.Message });
+            return Ok(result.Data);
+        }
     }
 }

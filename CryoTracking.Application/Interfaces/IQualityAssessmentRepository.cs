@@ -11,7 +11,7 @@ namespace CryoTracking.Application.Interfaces
 {
     public interface IQualityAssessmentRepository
     {
-
+        Task<ResultResponse<IEnumerable<QualityAssessmentReadDto>>> GetAllAsync();
         Task<ResultResponse<IEnumerable<QualityAssessmentReadDto>>> GetBySampleIdAsync(int sampleId);
         Task<ResultResponse<QualityAssessmentReadDto>> CreateAsync(QualityAssessmentCreateDto dto);
     }

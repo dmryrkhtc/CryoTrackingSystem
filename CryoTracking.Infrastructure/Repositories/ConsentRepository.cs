@@ -15,7 +15,33 @@ namespace CryoTracking.Infrastructure.Repositories
         {
             _context = context;
         }
+        public async Task<ResultResponse<IEnumerable<ConsentReadDto>>> GetAllAsync()
+        {
+            try
+            {
+                var consents = await _context.Consents
+                    .Include(c => c.Patient)
+                    .ToListAsync();
 
+                return new ResultResponse<IEnumerable<ConsentReadDto>>
+                {
+                    Success = true,
+                    Data = consents.Select(c => new ConsentReadDto
+                    {
+                        ConsentId = c.ConsentId,
+                        PatientId = c.PatientId,
+                        PatientName = c.Patient?.FullName ?? "",
+                        ConsentType = c.ConsentType,
+                        FilePath = c.FilePath,
+                        SignedAt = c.SignedAt
+                    })
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<IEnumerable<ConsentReadDto>> { Success = false, Message = ex.Message };
+            }
+        }
         public async Task<ResultResponse<IEnumerable<ConsentReadDto>>> GetByPatientIdAsync(int patientId)
         {
             try

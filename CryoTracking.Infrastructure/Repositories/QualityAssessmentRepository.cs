@@ -15,7 +15,34 @@ namespace CryoTracking.Infrastructure.Repositories
         {
             _context = context;
         }
+        public async Task<ResultResponse<IEnumerable<QualityAssessmentReadDto>>> GetAllAsync()
+        {
+            try
+            {
+                var list = await _context.QualityAssessments
+                    .Include(q => q.Sample)
+                    .OrderByDescending(q => q.ScoredAt)
+                    .ToListAsync();
 
+                return new ResultResponse<IEnumerable<QualityAssessmentReadDto>>
+                {
+                    Success = true,
+                    Data = list.Select(q => new QualityAssessmentReadDto
+                    {
+                        QAId = q.QAId,
+                        SampleId = q.SampleId,
+                       
+                        MorphologyGrade = q.MorphologyGrade,
+                        AIScore = q.AIScore,
+                        ScoredAt = q.ScoredAt
+                    })
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<IEnumerable<QualityAssessmentReadDto>> { Success = false, Message = ex.Message };
+            }
+        }
         public async Task<ResultResponse<IEnumerable<QualityAssessmentReadDto>>> GetBySampleIdAsync(int sampleId)
         {
             try

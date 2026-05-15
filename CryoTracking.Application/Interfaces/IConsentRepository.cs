@@ -11,6 +11,7 @@ namespace CryoTracking.Application.Interfaces
 {
     public interface IConsentRepository
     {
+        Task<ResultResponse<IEnumerable<ConsentReadDto>>> GetAllAsync();
         Task<ResultResponse<IEnumerable<ConsentReadDto>>> GetByPatientIdAsync(int patientId);
         Task<ResultResponse<ConsentReadDto>> CreateAsync(ConsentCreateDto dto);
     }

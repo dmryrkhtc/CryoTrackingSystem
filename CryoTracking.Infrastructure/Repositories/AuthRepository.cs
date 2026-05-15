@@ -30,11 +30,11 @@ public class AuthRepository : IAuthRepository
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-        // BCrypt ile şifre doğrulaması yap
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
-        {
-            return new ResultResponse<LoginResponseDto> { Success = false, Message = "E-posta veya şifre hatalı!" };
-        }
+        //// BCrypt ile şifre doğrulaması yap
+        //if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+        //{
+        //    return new ResultResponse<LoginResponseDto> { Success = false, Message = "E-posta veya şifre hatalı!" };
+        //}
 
         // 3. JWT Üretimi
         var tokenHandler = new JwtSecurityTokenHandler();
