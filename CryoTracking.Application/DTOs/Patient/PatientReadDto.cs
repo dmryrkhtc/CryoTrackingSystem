@@ -20,5 +20,7 @@ namespace CryoTracking.Application.DTOs.Patient
         public string? PartnerTCNo { get; set; }
         public MaritalStatusType MaritalStatus { get; set; }
         public DateTime CreatedAt { get; set; }
+        public List<CryoTracking.Application.DTOs.Sample.SampleReadDto>? Samples { get; set; }
+        public List<CryoTracking.Application.DTOs.Consent.ConsentReadDto>? Consents { get; set; }
     }
 }

@@ -12,35 +12,48 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CryoTracking.Infrastructure.Repositories
+{
+    public class SampleRepository : ISampleRepository
     {
-        public class SampleRepository : ISampleRepository
-        {
-            private readonly CryoDbContext _context;
+        private readonly CryoDbContext _context;
 
-            public SampleRepository(CryoDbContext context)
-            {
-                _context = context;
-            }
+        public SampleRepository(CryoDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<ResultResponse<IEnumerable<SampleReadDto>>> GetAllAsync()
         {
             try
             {
                 var now = DateTime.UtcNow;
+
+            
                 var samples = await _context.Samples
+                    .Include(s => s.Patient)
+                    .Include(s => s.QualityAssessments)
                     .AsNoTracking()
                     .Select(s => new SampleReadDto
                     {
                         SampleId = s.SampleId,
-                        PatientId=s.PatientId,
+                        PatientId = s.PatientId,
                         PatientName = s.Patient.FullName,
                         SampleType = s.SampleType,
                         FreezeDate = s.FreezeDate,
                         ThawDate = s.ThawDate,
                         Status = s.Status,
                         Notes = s.Notes,
+
+                        QualityAssessments = s.QualityAssessments.Select(q => new CryoTracking.Application.DTOs.QualityAssessment.QualityAssessmentReadDto
+                        {
+                          
+                            SampleId = q.SampleId,
+                            MorphologyGrade = q.MorphologyGrade,
+                            EmbryologistNote = q.EmbryologistNote,
+                            AIScore = q.AIScore
+                        }).ToList(),
+
                         // 5 yıllık süre kontrolü
-                        // Eğer dondurma tarihinden bugüne 5 yıl (1825 gün) geçmişse uyarı ver
                         IsWarning = s.Status == StatusType.Frozen && (now - s.FreezeDate).TotalDays > 1700,
                         IsExpired = s.Status == StatusType.Frozen && (now - s.FreezeDate).TotalDays > 1825
                     })
@@ -55,101 +68,102 @@ namespace CryoTracking.Infrastructure.Repositories
         }
 
         public async Task<ResultResponse<SampleReadDto>> GetByIdAsync(int id)
+        {
+            try
             {
-                try
-                {
-                    var s = await _context.Samples
-                        .Include(s => s.Patient)
-                        .FirstOrDefaultAsync(s => s.SampleId == id);
+                var s = await _context.Samples
+                    .Include(s => s.Patient)
+                    .Include(s => s.QualityAssessments)
+                    .FirstOrDefaultAsync(s => s.SampleId == id);
 
-                    if (s == null)
-                        return new ResultResponse<SampleReadDto>
-                        {
-                            Success = false,
-                            Message = "Ornek bulunamadi."
-                        };
+                if (s == null)
+                    return new ResultResponse<SampleReadDto> { Success = false, Message = "Ornek bulunamadi." };
 
-                    return new ResultResponse<SampleReadDto>
-                    {
-                        Success = true,
-                        Message = "Ornek basariyla bulundu.",
-                        Data = new SampleReadDto
-                        {
-                            SampleId = s.SampleId,
-                            PatientId = s.PatientId,
-                            PatientName = s.Patient?.FullName ?? "",
-                            SampleType = s.SampleType,
-                            FreezeDate = s.FreezeDate,
-                            ThawDate = s.ThawDate,
-                            Status = s.Status,
-                            Notes = s.Notes
-                        }
-                    };
-                }
-                catch (Exception ex)
+                return new ResultResponse<SampleReadDto>
                 {
-                    return new ResultResponse<SampleReadDto>
+                    Success = true,
+                    Message = "Ornek basariyla bulundu.",
+                    Data = new SampleReadDto
                     {
-                        Success = false,
-                        Message = $"Ornek getirilirken hata olustu: {ex.Message}"
-                    };
-                }
+                        SampleId = s.SampleId,
+                        PatientId = s.PatientId,
+                        PatientName = s.Patient?.FullName ?? "",
+                        SampleType = s.SampleType,
+                        FreezeDate = s.FreezeDate,
+                        ThawDate = s.ThawDate,
+                        Status = s.Status,
+                        Notes = s.Notes,
+                        QualityAssessments = s.QualityAssessments.Select(q => new CryoTracking.Application.DTOs.QualityAssessment.QualityAssessmentReadDto
+                        {
+                           
+                            SampleId = q.SampleId,
+                            MorphologyGrade = q.MorphologyGrade,
+                            EmbryologistNote = q.EmbryologistNote,
+                            AIScore = q.AIScore
+                        }).ToList()
+                    }
+                };
             }
-
-            public async Task<ResultResponse<IEnumerable<SampleReadDto>>> GetByPatientIdAsync(int patientId)
+            catch (Exception ex)
             {
-                try
-                {
-                    var samples = await _context.Samples
-                        .Include(s => s.Patient)
-                        .Where(s => s.PatientId == patientId)
-                        .ToListAsync();
-
-                    if (!samples.Any())
-                        return new ResultResponse<IEnumerable<SampleReadDto>>
-                        {
-                            Success = false,
-                            Message = "Bu hastaya ait ornek bulunamadi."
-                        };
-
-                    return new ResultResponse<IEnumerable<SampleReadDto>>
-                    {
-                        Success = true,
-                        Message = "Ornekler basariyla listelendi.",
-                        Data = samples.Select(s => new SampleReadDto
-                        {
-                            SampleId = s.SampleId,
-                            PatientId = s.PatientId,
-                            PatientName = s.Patient?.FullName ?? "",
-                            SampleType = s.SampleType,
-                            FreezeDate = s.FreezeDate,
-                            ThawDate = s.ThawDate,
-                            Status = s.Status,
-                            Notes = s.Notes
-                        })
-                    };
-                }
-                catch (Exception ex)
-                {
-                    return new ResultResponse<IEnumerable<SampleReadDto>>
-                    {
-                        Success = false,
-                        Message = $"Ornekler getirilirken hata olustu: {ex.Message}"
-                    };
-                }
+                return new ResultResponse<SampleReadDto> { Success = false, Message = $"Ornek getirilirken hata olustu: {ex.Message}" };
             }
+        }
+
+        public async Task<ResultResponse<IEnumerable<SampleReadDto>>> GetByPatientIdAsync(int patientId)
+        {
+            try
+            {
+                var samples = await _context.Samples
+                    .Include(s => s.Patient)
+                    .Include(s => s.QualityAssessments) // Hasta bazlı aramada da dahil ettik
+                    .Where(s => s.PatientId == patientId)
+                    .ToListAsync();
+
+                if (!samples.Any())
+                    return new ResultResponse<IEnumerable<SampleReadDto>> { Success = false, Message = "Bu hastaya ait ornek bulunamadi." };
+
+                return new ResultResponse<IEnumerable<SampleReadDto>>
+                {
+                    Success = true,
+                    Message = "Ornekler basariyla listelendi.",
+                    Data = samples.Select(s => new SampleReadDto
+                    {
+                        SampleId = s.SampleId,
+                        PatientId = s.PatientId,
+                        PatientName = s.Patient?.FullName ?? "",
+                        SampleType = s.SampleType,
+                        FreezeDate = s.FreezeDate,
+                        ThawDate = s.ThawDate,
+                        Status = s.Status,
+                        Notes = s.Notes,
+                        QualityAssessments = s.QualityAssessments.Select(q => new CryoTracking.Application.DTOs.QualityAssessment.QualityAssessmentReadDto
+                        {
+                       
+                            SampleId = q.SampleId,
+                            MorphologyGrade = q.MorphologyGrade,
+                            EmbryologistNote = q.EmbryologistNote,
+                            AIScore = q.AIScore
+                        }).ToList()
+                    })
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultResponse<IEnumerable<SampleReadDto>> { Success = false, Message = $"Ornekler getirilirken hata olustu: {ex.Message}" };
+            }
+        }
 
         public async Task<ResultResponse<SampleReadDto>> CreateAsync(SampleCreateDto dto)
         {
             try
             {
-                // Hastayı bul ve cinsiyet kontrolü yap
                 var patient = await _context.Patients.FindAsync(dto.PatientId);
                 if (patient == null)
                     return new ResultResponse<SampleReadDto> { Success = false, Message = "Hasta bulunamadı." };
 
-                // Embriyo sadece kadın hastaya kaydedilebilir
-                if (dto.SampleType == SampleType.Embryo && patient.Gender != Gender.Female)
+                // Cinsiyet enum kontrolü (Female = 1 durumuna göre esnetildi)
+                if ((int)dto.SampleType == (int)SampleType.Embryo && (int)patient.Gender != 1)
                 {
                     return new ResultResponse<SampleReadDto>
                     {
@@ -166,7 +180,7 @@ namespace CryoTracking.Infrastructure.Repositories
                     Status = dto.Status,
                     CreatedBy = dto.CreatedBy,
                     Notes = dto.Notes,
-                    IsActive = true // Arşivleme için varsayılan aktif
+                    IsActive = true
                 };
 
                 await _context.Samples.AddAsync(sample);
@@ -193,6 +207,7 @@ namespace CryoTracking.Infrastructure.Repositories
                 return new ResultResponse<SampleReadDto> { Success = false, Message = $"Ornek eklenirken hata: {ex.Message}" };
             }
         }
+
         public async Task<ResultResponse<bool>> UpdateAsync(int id, SampleUpdateDto dto)
         {
             try
@@ -201,7 +216,6 @@ namespace CryoTracking.Infrastructure.Repositories
                 if (sample == null)
                     return new ResultResponse<bool> { Success = false, Message = "Guncellenecek ornek bulunamadi." };
 
-                // Yasal takip veya Çözülmüş numuneler değiştirilemez
                 if (sample.Status == StatusType.LegalHold)
                     return new ResultResponse<bool> { Success = false, Message = "DİKKAT: Yasal kilit (LegalHold) altındaki numuneler üzerinde işlem yapılamaz!" };
 
@@ -228,7 +242,6 @@ namespace CryoTracking.Infrastructure.Repositories
                 if (sample == null)
                     return new ResultResponse<bool> { Success = false, Message = "Silinecek ornek bulunamadi." };
 
-                // Yasal takipteki numune silinemez
                 if (sample.Status == StatusType.LegalHold)
                     return new ResultResponse<bool> { Success = false, Message = "Yasal kilit altındaki numune silinemez!" };
 
@@ -240,5 +253,4 @@ namespace CryoTracking.Infrastructure.Repositories
             catch (Exception ex) { return new ResultResponse<bool> { Success = false, Message = $"Ornek silinirken hata olustu: {ex.Message}" }; }
         }
     }
-    }
-
+}

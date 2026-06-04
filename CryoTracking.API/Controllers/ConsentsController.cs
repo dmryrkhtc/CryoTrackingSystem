@@ -25,14 +25,18 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
-        [Authorize(Roles = "Sistem Yoneticisi,Kayit Veri Yetkilisi")]
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Kayit Veri Yetkilisi")]
         [HttpPost]
-        public async Task<IActionResult> Create(ConsentCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] ConsentCreateDto dto) // 🔥 [FromBody] KESİNLİKLE EKLENDİ!
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _repo.CreateAsync(dto);
             if (!result.Success)
                 return BadRequest(new { result.Message });
-            return Ok(result.Data);
+
+            return Ok(result.Data); // Doğrudan DTO verisini dönüyoruz
         }
         [Authorize(Roles = "Sistem Yoneticisi,Doktor,Kayit Veri Yetkilisi")]
         [HttpGet]

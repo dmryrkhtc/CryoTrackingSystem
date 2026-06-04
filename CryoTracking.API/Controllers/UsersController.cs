@@ -16,7 +16,9 @@ namespace CryoTracking.API.Controllers
         {
             _repo = repo;
         }
-        [Authorize(Roles = "Sistem Yoneticisi")]
+
+        // 🌟 DÜZELTME: Doktor ve Embriyologların da kullanıcı listesini görmesine (veya rollerini denetlemesine) izin veriyoruz
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Embriyolog")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -25,7 +27,8 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
-       [Authorize(Roles = "Sistem Yoneticisi")]
+
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Embriyolog")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -34,6 +37,8 @@ namespace CryoTracking.API.Controllers
                 return NotFound(new { result.Message });
             return Ok(result.Data);
         }
+
+        // Yeni personel ekleme yetkisi yine sadece Sistem Yöneticisinde (Admin) kalsın, güvenliği koruyalım 🛡️
         [Authorize(Roles = "Sistem Yoneticisi")]
         [HttpPost]
         public async Task<IActionResult> Create(UserCreateDto dto)
@@ -43,7 +48,9 @@ namespace CryoTracking.API.Controllers
                 return BadRequest(new { result.Message });
             return CreatedAtAction(nameof(GetById), new { id = result.Data.UserId }, result.Data);
         }
-        [Authorize(Roles = "Sistem Yoneticisi")]
+
+        // 🌟 DÜZELTME: Durum güncelleme (Soft Delete) işlemini diğer yetkili personellerin de tetiklemesine izin veriyoruz
+        [Authorize(Roles = "Sistem Yoneticisi,Doktor,Embriyolog")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UserUpdateDto dto)
         {

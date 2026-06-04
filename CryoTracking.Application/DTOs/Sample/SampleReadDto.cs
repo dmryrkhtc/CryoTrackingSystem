@@ -1,4 +1,5 @@
-﻿using CryoTracking.Domain.Enums;
+﻿using CryoTracking.Application.DTOs.QualityAssessment;
+using CryoTracking.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,6 @@ namespace CryoTracking.Application.DTOs.Sample
         public string? Notes { get; set; }
         public bool IsWarning { get; set; }
         public bool IsExpired { get; set; }
+        public List<QualityAssessmentReadDto> QualityAssessments { get; set; }
     }
 }

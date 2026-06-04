@@ -19,5 +19,6 @@ namespace CryoTracking.Application.DTOs.User
 
         public int RoleId { get; set; }
         // Password ayri bir endpoint ile degistirilir
+        public bool IsActive { get; set; }
     }
 }

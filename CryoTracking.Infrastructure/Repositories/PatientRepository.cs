@@ -34,6 +34,9 @@ namespace CryoTracking.Infrastructure.Repositories
                         CoupleType = p.CoupleType,
                         ContactInfo = p.ContactInfo,
                         MaritalStatus = p.MaritalStatus,
+                        // 🌟 Liste ekranında partner verilerini okuyoruz
+                        PartnerFullName = p.PartnerFullName,
+                        PartnerTCNo = p.PartnerTCNo,
                         CreatedAt = p.CreatedAt
                     })
                     .ToListAsync();
@@ -51,6 +54,8 @@ namespace CryoTracking.Infrastructure.Repositories
             try
             {
                 var p = await _context.Patients
+                    .Include(p => p.Samples)
+                    .Include(p => p.Consents)
                     .FirstOrDefaultAsync(p => p.PatientId == id && p.IsActive);
 
                 if (p == null)
@@ -69,7 +74,24 @@ namespace CryoTracking.Infrastructure.Repositories
                         CoupleType = p.CoupleType,
                         ContactInfo = p.ContactInfo,
                         MaritalStatus = p.MaritalStatus,
-                        CreatedAt = p.CreatedAt
+                        // 🌟 Detay ekranında partner verilerini okuyoruz
+                        PartnerFullName = p.PartnerFullName,
+                        PartnerTCNo = p.PartnerTCNo,
+                        CreatedAt = p.CreatedAt,
+
+                        Samples = p.Samples?.Where(s => s.IsActive).Select(s => new CryoTracking.Application.DTOs.Sample.SampleReadDto
+                        {
+                            PatientId = s.PatientId,
+                            // Diğer sample map'lemelerin buraya gelecek
+                        }).ToList(),
+
+                        Consents = p.Consents?.Select(c => new CryoTracking.Application.DTOs.Consent.ConsentReadDto
+                        {
+                            PatientId = c.PatientId,
+                            ConsentId = c.ConsentId,
+                            ConsentType = c.ConsentType,
+                            // Diğer consent map'lemelerin buraya gelecek
+                        }).ToList()
                     }
                 };
             }
@@ -92,6 +114,9 @@ namespace CryoTracking.Infrastructure.Repositories
                     CoupleType = dto.CoupleType,
                     ContactInfo = dto.ContactInfo,
                     MaritalStatus = dto.MaritalStatus,
+                  
+                    PartnerFullName = dto.PartnerFullName,
+                    PartnerTCNo = dto.PartnerTCNo,
                     CreatedAt = DateTime.UtcNow,
                     IsActive = true
                 };
@@ -133,6 +158,9 @@ namespace CryoTracking.Infrastructure.Repositories
                 patient.ContactInfo = dto.ContactInfo;
                 patient.CoupleType = dto.CoupleType;
                 patient.MaritalStatus = dto.MaritalStatus;
+                // 🌟 Güncelleme işleminde de partner verilerini güncel tutuyoruz
+                patient.PartnerFullName = dto.PartnerFullName;
+                patient.PartnerTCNo = dto.PartnerTCNo;
 
                 _context.Patients.Update(patient);
                 await _context.SaveChangesAsync();

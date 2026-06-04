@@ -11,9 +11,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+// Cors Politikalarý
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -33,6 +38,7 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
 // 1. JwtSettings'i konfigürasyondan oku
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
@@ -40,8 +46,8 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 // 2. Kimlik Doðrulama (Authentication) Ayarlarý
 builder.Services.AddAuthentication(options =>
 {
-options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -58,9 +64,14 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 });
 
 // Servis Kayýtlarý
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Enum'larý sayý yerine (0,1,2) isimleriyle ("Frozen", "Embryo") iþler
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<PatientCreateValidator>();
 
@@ -69,25 +80,19 @@ builder.Services.AddDbContext<CryoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Dependency Injection (Baðýmlýlýk Enjeksiyonu)
+builder.Services.AddHttpClient<IEmbryoAIService, EmbryoAIService>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<ISampleRepository, SampleRepository>();
 builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 builder.Services.AddScoped<IQualityAssessmentRepository, QualityAssessmentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        // Enum'larý sayý yerine (0,1,2) isimleriyle ("Frozen", "Embryo") iþler
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-    });
 
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "CryoTracking API", Version = "v1" });
 
-    //  Swagger'a JWT kullandýðýmý tanýmla
+    // Swagger'a JWT kullandýðýmý tanýmla
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -114,29 +119,30 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    //  EnumSchemaFilter burada tut
     c.SchemaFilter<EnumSchemaFilter>();
 });
+
 // Uygulama Build Ediliyor
 var app = builder.Build();
 
-//  Middleware (Ara Katman) Ayarlarý
+// Middleware (Ara Katman) Ayarlarý
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "CryoTracking API V1");
-        // c.RoutePrefix = string.Empty; // Eðer bunu açarsan direkt localhost:5005'te Swagger açýlýr
     });
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+// CORS sýralamasý düzeltildi
 app.UseCors("AllowAll");
-app.UseCors("AllowReactApp");
-app.UseAuthentication(); //kimlik sor
-app.UseAuthorization(); //yetkisizse engelle
-app.UseAuthorization();
+
+app.UseAuthentication(); // kimlik sor
+app.UseAuthorization();  // yetkisizse engelle
 
 // Controller'larý map'le
 app.MapControllers();
