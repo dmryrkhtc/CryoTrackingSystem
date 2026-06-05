@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Globalization;
+using System;
 
 namespace CryoTracking.API.Controllers
 {
@@ -13,10 +15,8 @@ namespace CryoTracking.API.Controllers
     public class QualityAssessmentsController : ControllerBase
     {
         private readonly IQualityAssessmentRepository _repo;
-        // 1. Yeni eklediğimiz AI Servis arayüzünü tanımlıyoruz
         private readonly IEmbryoAIService _aiService;
 
-        // Constructor'a AI servisimizi enjekte ediyoruz
         public QualityAssessmentsController(IQualityAssessmentRepository repo, IEmbryoAIService aiService)
         {
             _repo = repo;
@@ -33,25 +33,42 @@ namespace CryoTracking.API.Controllers
             return Ok(result.Data);
         }
 
-        // 2. DEĞİŞEN KISIM BURASI: Metodu [FromForm] yaptık ve IFormFile ekledik
         [Authorize(Roles = "Sistem Yoneticisi,Embriyolog")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] QualityAssessmentCreateDto dto, IFormFile embryoImage)
         {
-            // Fotoğraf yüklenmiş mi kontrolü yapıyoruz
+            // Fotoğraf yüklenmiş mi kontrolü
             if (embryoImage == null || embryoImage.Length == 0)
                 return BadRequest(new { Message = "Yapay zeka analizi için embriyo görseli yüklemek zorunludur." });
 
-            // 3. Resmi Hugging Face'teki yapay zekaya gönderip skoru alıyoruz
-            double? aiScore = await _aiService.GetAIScoreAsync(embryoImage);
+            double? aiScore = null;
+
+            // 🌟 SWAGGER VEYA ÖNYÜZDEN ELLE GİRİLEN DEĞER VAR MI KONTROLÜ (MOCK/TEST İÇİN):
+            // Eğer form verisinden manuel bir AIScore gönderildiyse dil azizliğine uğramadan parse edelim
+            if (Request.Form.TryGetValue("AIScore", out var incomingScore) && !string.IsNullOrEmpty(incomingScore))
+            {
+                string scoreStr = incomingScore.ToString().Replace(',', '.').Trim();
+                if (double.TryParse(scoreStr, NumberStyles.Any, CultureInfo.InvariantCulture, out double parsedManualScore))
+                {
+                    aiScore = parsedManualScore;
+                }
+            }
+
+            // Eğer dışarıdan el ile bir skor simüle edilmediyse, Hugging Face yapay zeka servisine git
+            if (aiScore == null)
+            {
+                aiScore = await _aiService.GetAIScoreAsync(embryoImage);
+            }
 
             if (aiScore == null)
-                return StatusCode(500, new { Message = "Yapay zeka analiz servisine ulaşılamadı veya bir hata oluştu." });
+                return StatusCode(500, new { Message = "Yapay zeka analiz servisine ulaşılamadı veya geçerli bir skor üretilemedi." });
 
-            // 4. Gelen skoru DTO içerisindeki AIScore alanına otomatik yazıyoruz
-            dto.AIScore = aiScore;
+            // 🌟 KESİN BAĞLANTI SİGORTASI: 
+            // Modelden veya formdan gelen saf double skoru evrensel kültüre göre normalize edip DTO'ya basıyoruz
+            string secureFormated = aiScore.Value.ToString(CultureInfo.InvariantCulture);
+            dto.AIScore = double.Parse(secureFormated, CultureInfo.InvariantCulture);
 
-            // 5. Senin mevcut kayıt fonksiyonun: DTO artık AI skoru dolu şekilde DB'ye gidiyor
+            // Repo üzerinden veritabanına kayıt işlemi fırlatılıyor
             var result = await _repo.CreateAsync(dto);
             if (!result.Success)
                 return BadRequest(new { result.Message });
