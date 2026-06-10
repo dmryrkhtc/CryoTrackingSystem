@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Globalization;
 
 namespace CryoTracking.Infrastructure.Repositories
 {
@@ -46,7 +45,11 @@ namespace CryoTracking.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                return new ResultResponse<IEnumerable<QualityAssessmentReadDto>> { Success = false, Message = ex.Message };
+                return new ResultResponse<IEnumerable<QualityAssessmentReadDto>>
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
             }
         }
 
@@ -89,46 +92,20 @@ namespace CryoTracking.Infrastructure.Repositories
                 };
             }
         }
+
         public async Task<ResultResponse<QualityAssessmentReadDto>> CreateAsync(QualityAssessmentCreateDto dto)
         {
             try
             {
-                // 🌟 AKILLI KLİNİK KALİBRASYON MOTORU:
-                // Python modelinden (Hugging Face) gelen saf bağıntısal skoru (Domain Shift uyuşmazlığını gidermek için)
-                // jüri sunumuna uygun, klinik başarı oranlarına eşliyoruz.
-                double finalScore = 0.0;
-
-                if (dto.AIScore.HasValue)
-                {
-                    double rawScore = dto.AIScore.Value;
-
-                    // Model iyi embriyo için taban puanı yüksek (Örn: 0.11 - 0.15) veriyorsa %94'e esnet:
-                    if (rawScore > 0.10)
-                    {
-                        finalScore = 0.94; // Şampiyon Embriyo (%94 Canlılık)
-                    }
-                    // Model kötü embriyo için taban puanı çok dipte (Örn: 0.02) veriyorsa %21'e esnet:
-                    else if (rawScore > 0.00 && rawScore <= 0.10)
-                    {
-                        finalScore = 0.21; // Zayıf/Yedek Embriyo (%21 Canlılık)
-                    }
-                    else
-                    {
-                        finalScore = rawScore;
-                    }
-                }
-                else
-                {
-                    // 🛡️ SİGORTA: Eğer servis tamamen null dönerse manuel morfolojiye göre ata:
-                    finalScore = dto.MorphologyGrade.ToUpper().Contains("AA") ? 0.94 : 0.21;
-                }
+                // 🌟 SIFIR MANİPÜLASYON: Model ne ürettiyse veritabanına o yazılır.
+                double finalScore = dto.AIScore ?? 0.0;
 
                 var qa = new QualityAssessment
                 {
                     SampleId = dto.SampleId,
                     MorphologyGrade = dto.MorphologyGrade,
                     EmbryologistNote = dto.EmbryologistNote,
-                    AIScore = finalScore, // Veritabanına tam hedeflediğimiz net oranlar yazılıyor!
+                    AIScore = finalScore, // Modelin Hugging Face'ten dönen özgün, saf skoru!
                     ScoredAt = DateTime.UtcNow
                 };
 
@@ -152,9 +129,12 @@ namespace CryoTracking.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                return new ResultResponse<QualityAssessmentReadDto> { Success = false, Message = ex.Message };
+                return new ResultResponse<QualityAssessmentReadDto>
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
             }
         }
     }
-    }
-    
+}
